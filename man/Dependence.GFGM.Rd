@@ -9,12 +9,12 @@ Dependence.GFGM(p, q, theta)
 \arguments{
 \item{p}{Copula parameter that greater than or equal to 1.}
 
-\item{q}{Copula parameter that greater than or equal to 1.}
+\item{q}{Copula parameter that greater than 1.}
 
 \item{theta}{Copula parameter with restricted range.}
 }
 \value{
-\item{theta}{dependence parameter.}
+\item{theta}{Dependence parameter.}
 \item{tau}{Kendall's tau.}
 \item{rho}{Spearman's rho.}
 }
@@ -22,13 +22,13 @@ Dependence.GFGM(p, q, theta)
 Compute Kendall's tau and Spearman's rho with their boundaries under the generalized FGM copula.
 }
 \details{
-The restricted range of \eqn{\theta} is
+The admissiable range of \code{theta} (\eqn{\theta}) is
 \deqn{-\min\bigg\{1,\frac{1}{p^{2q}}\bigg(\frac{1+pq}{q-1}\bigg)^{2q-2}\bigg\} \leq \theta \leq \frac{1}{p^{q}}\bigg(\frac{1+pq}{q-1}\bigg)^{q-1}.}
-If \eqn{q = 1}, replace \eqn{\big(\frac{1+pq}{q-1}\big)^{q-1}} by 1. See also Shih and Emura (2016) for details.
+See also Shih and Emura (2016) for details.
 }
 \examples{
 library(GFGM.copula)
-Dependence.GFGM(3,2,0.5)
+Dependence.GFGM(3,2,0.75)
 }
 \references{
 Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.

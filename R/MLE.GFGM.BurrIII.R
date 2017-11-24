@@ -1,11 +1,11 @@
-#' Likelihood inference for the bivariate Burr III model with dependent competing risks data
+#' Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the Burr III margins
 #'
-#' @param t.time Vector of the observed failure times.
-#' @param t.event1 Vector of the indicators for the failure cause 1.
-#' @param t.event2 Vector of the indicators for the failure cause 2.
+#' @param t.event Vector of the observed failure times.
+#' @param event1 Vector of the indicators for the failure cause 1.
+#' @param event2 Vector of the indicators for the failure cause 2.
 #' @param D Positive tunning parameter in the NR algorithm.
 #' @param p Copula parameter that greater than or equal to 1.
-#' @param q Copula parameter that greater than or equal to 1 (integer).
+#' @param q Copula parameter that greater than 1 (integer).
 #' @param theta Copula parameter with restricted range.
 #' @param eta Location parameter with default value 0.
 #' @param Gamma.0 Initial guess for the common shape parameter gamma with default value 1.
@@ -15,19 +15,18 @@
 #' @param r.1 Positive tunning parameter in the NR algorithm with default value 1.
 #' @param r.2 Positive tunning parameter in the NR algorithm with default value 1.
 #' @param r.3 Positive tunning parameter in the NR algorithm with default value 1.
-#' @param Sdist.plot Plot the sub-distribution functions if "TRUE".
 #' @description Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the Burr III margins.
 #' @details The original paper is submitted for review.
 #'
-#' The copula parameter \code{q} is restricted to be integer due to the binominal theorem.
-#' The restricted range of \eqn{\theta} is given in \code{Dependence.GFGM}
+#' The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
+#' The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
 #'
-#' @return \item{n}{sample size.}
-#' \item{count}{iteration number.}
-#' \item{random}{randomization number.}
-#' \item{Alpha}{positive shape parameter for the Burr III margin (failure cause 1).}
-#' \item{Beta}{positive shape parameter for the Burr III margin (failure cause 2).}
-#' \item{Gamma}{common shape parameter for the Burr III margins.}
+#' @return \item{n}{Sample size.}
+#' \item{count}{Iteration number.}
+#' \item{random}{Randomization number.}
+#' \item{Alpha}{Positive shape parameter for the Burr III margin (failure cause 1).}
+#' \item{Beta}{Positive shape parameter for the Burr III margin (failure cause 2).}
+#' \item{Gamma}{Common shape parameter for the Burr III margins.}
 #' \item{MeanX}{Mean lifetime due to failure cause 1.}
 #' \item{MeanY}{Mean lifetime due to failure cause 2.}
 #' \item{logL}{Log-likelihood value under the fitted model.}
@@ -35,9 +34,7 @@
 #' @references Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
 #' @references Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 #' @seealso \code{\link{Dependence.GFGM}}
-#' @importFrom cmprsk cuminc
-#' @importFrom graphics legend lines plot
-#' @importFrom stats qnorm runif integrate nlm
+#' @importFrom stats qnorm runif
 #' @importFrom utils globalVariables
 #' @export
 #'
@@ -61,33 +58,26 @@
 #'           152,184,400,424,88,152,184)
 #' cen   = rep(630,44)
 #'
-#' t.time   = c(con,uncon,cen)
-#' t.event1 = c(rep(1,length(con)),rep(0,length(uncon)),rep(0,length(cen)))
-#' t.event2 = c(rep(0,length(con)),rep(1,length(uncon)),rep(0,length(cen)))
+#' t.event = c(con,uncon,cen)
+#' event1  = c(rep(1,length(con)),rep(0,length(uncon)),rep(0,length(cen)))
+#' event2  = c(rep(0,length(con)),rep(1,length(uncon)),rep(0,length(cen)))
 #'
 #' library(GFGM.copula)
-#' MLE.GFGM.BurrIII(t.time,t.event1,t.event2,5000,3,2,0.75,eta = -71)
+#' MLE.GFGM.BurrIII(t.event,event1,event2,5000,3,2,0.75,eta = -71)
 
-MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0 = 1,
+MLE.GFGM.BurrIII = function(t.event,event1,event2,D,p,q,theta,eta = 0,Gamma.0 = 1,
                             epsilon.0 = 1e-5,epsilon.1 = 1e-10,epsilon.2 = 1e-300,
-                            r.1 = 1,r.2 = 1,r.3 = 1,Sdist.plot = FALSE) {
-
-  t.time = t.time
-  t.event1 = t.event1
-  t.event2 = t.event2
-  p = p
-  q = q
-  theta = theta
+                            r.1 = 1,r.2 = 1,r.3 = 1) {
 
   ### checking inputs ###
-  n = length(t.time)
-  if (length(t.time[t.time <= 0]) != 0) {stop("t.time must be positive")}
-  if (length(t.event1) != n) {stop("the length of t.event1 is different from t.time")}
-  if (length(t.event2) != n) {stop("the length of t.event2 is different from t.time")}
-  if (length(t.event1[t.event1 == 0 | t.event1 == 1]) != n) {stop("elements in t.event1 must be either 0 or 1")}
-  if (length(t.event2[t.event2 == 0 | t.event2 == 1]) != n) {stop("elements in t.event2 must be either 0 or 1")}
-  temp.event = t.event1+t.event2
-  if (length(temp.event[temp.event == 2]) != 0) {stop("t.event1 and t.event2 cannot be 1 simultaneously")}
+  n = length(t.event)
+  if (length(t.event[t.event <= 0]) != 0) {stop("t.event must be positive")}
+  if (length(event1) != n) {stop("the length of event1 is different from t.event")}
+  if (length(event2) != n) {stop("the length of event2 is different from t.event")}
+  if (length(event1[event1 == 0 | event1 == 1]) != n) {stop("elements in event1 must be either 0 or 1")}
+  if (length(event2[event2 == 0 | event2 == 1]) != n) {stop("elements in event2 must be either 0 or 1")}
+  temp.event = event1+event2
+  if (length(temp.event[temp.event == 2]) != 0) {stop("event1 and event2 cannot be 1 simultaneously")}
   if (D <= 0) {stop("D must be positive")}
   if (epsilon.0 <= 0) {stop("epsilon.0 must be positive")}
   if (epsilon.1 <= 0) {stop("epsilon.1 must be positive")}
@@ -97,7 +87,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
   if (r.3 <= 0) {stop("r.3 must be positive")}
   if (Gamma.0 <= 0) {stop("Gamma.0 must be positive")}
   if (p < 1) {stop("p must be greater than or equal to 1")}
-  if (q < 1 | q != round(q)) {stop("q must be greater than or equal to 1 (integer)")}
+  if (q <= 1 | q != round(q)) {stop("q must be greater than 1 (integer)")}
   theta.UB = ((1+p*q)/(q-1))^(q-1)/p^q
   theta.LB = -min(1,(((1+p*q)/(q-1))^(q-1)/p^q)^2)
   if (theta > theta.UB | theta < theta.LB) {stop("theta is invalid")}
@@ -109,16 +99,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Alpha*Gamma*t.time^(-Gamma-1)*H^(Alpha+1)
-    M2 = Alpha*Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Alpha*Gamma*t.event^(-Gamma-1)*H^(Alpha+1)
+    M2 = Alpha*Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
         K1 = H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)
-        K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*K1*(1-(1+p*q)*H^(Alpha*p))*t.time^(-Gamma-1)
+        K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*K1*(1-(1+p*q)*H^(Alpha*p))*t.event^(-Gamma-1)
 
       }
 
@@ -133,16 +123,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Gamma*t.time^(-Gamma-1)*H^(Alpha+1)*(1+Alpha*log(H))
-    M2 = Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Alpha*log(H))
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Gamma*t.event^(-Gamma-1)*H^(Alpha+1)*(1+Alpha*log(H))
+    M2 = Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Alpha*log(H))
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+1)*log(H))
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+p+1)*log(H))
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+1)*log(H))
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+p+1)*log(H))
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -158,16 +148,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Gamma*t.time^(-Gamma-1)*H^(Alpha+1)*log(H)*(2+Alpha*log(H))
-    M2 = Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(2+Alpha*log(H))
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Gamma*t.event^(-Gamma-1)*H^(Alpha+1)*log(H)*(2+Alpha*log(H))
+    M2 = Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(2+Alpha*log(H))
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*j+1)*log(H)*(2+Alpha*(p*j+1)*log(H))
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*j+p+1)*log(H)*(2+Alpha*(p*j+p+1)*log(H))
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*j+1)*log(H)*(2+Alpha*(p*j+1)*log(H))
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*j+p+1)*log(H)*(2+Alpha*(p*j+p+1)*log(H))
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -183,15 +173,15 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M2 = Alpha*Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M2 = Alpha*Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -207,15 +197,15 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M2 = Alpha*Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)^2
+    H = (1+t.event^(-Gamma))^(-1)
+    M2 = Alpha*Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)^2
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*i+1)^2*log(H)^2
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*i+1)^2*log(H)^2
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*i+1)^2*log(H)^2
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*i+1)^2*log(H)^2
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -231,18 +221,18 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Alpha*t.time^(-Gamma-1)*H^(Alpha+1)*(1-Gamma*log(t.time)+(Alpha+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)
-    M2 = Alpha*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Alpha*t.event^(-Gamma-1)*H^(Alpha+1)*(1-Gamma*log(t.event)+(Alpha+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)
+    M2 = Alpha*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k1 = (Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k2 = (Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        K1 = t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(1-Gamma*log(t.time)+k1)
-        K2 = t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(1-Gamma*log(t.time)+k2)
+        k1 = (Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k2 = (Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        K1 = t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(1-Gamma*log(t.event)+k1)
+        K2 = t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(1-Gamma*log(t.event)+k2)
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -258,26 +248,26 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    m11 = (1-Gamma*log(t.time)+(Alpha+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)*(-log(t.time)+(Alpha+1)*t.time^(-Gamma)*log(t.time)*H)
-    m21 = (1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)*(-log(t.time)+(Alpha+Beta+1)*t.time^(-Gamma)*log(t.time)*H)
-    m12 = (Alpha+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-    m22 = (Alpha+Beta+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-    M1  = Alpha*t.time^(-Gamma-1)*H^(Alpha+1)*(m11+m12)
-    M2  = Alpha*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(m21+m22)
+    H = (1+t.event^(-Gamma))^(-1)
+    m11 = (1-Gamma*log(t.event)+(Alpha+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)*(-log(t.event)+(Alpha+1)*t.event^(-Gamma)*log(t.event)*H)
+    m21 = (1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)*(-log(t.event)+(Alpha+Beta+1)*t.event^(-Gamma)*log(t.event)*H)
+    m12 = (Alpha+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+    m22 = (Alpha+Beta+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+    M1  = Alpha*t.event^(-Gamma-1)*H^(Alpha+1)*(m11+m12)
+    M2  = Alpha*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(m21+m22)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k11 = 1-Gamma*log(t.time)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k21 = 1-Gamma*log(t.time)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k12 = -log(t.time)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*t.time^(-Gamma)*log(t.time)*H
-        k22 = -log(t.time)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*t.time^(-Gamma)*log(t.time)*H
-        k13 = (Alpha*(p*j+1)+Beta*(p*i+1)+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-        k23 = (Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-        K1  = t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(k11*k12+k13)
-        K2  = t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(k21*k22+k23)
+        k11 = 1-Gamma*log(t.event)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k21 = 1-Gamma*log(t.event)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k12 = -log(t.event)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*t.event^(-Gamma)*log(t.event)*H
+        k22 = -log(t.event)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*t.event^(-Gamma)*log(t.event)*H
+        k13 = (Alpha*(p*j+1)+Beta*(p*i+1)+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+        k23 = (Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+        K1  = t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(k11*k12+k13)
+        K2  = t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(k21*k22+k23)
         K   = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -293,8 +283,8 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M2 = Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Alpha*log(H))*log(H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M2 = Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Alpha*log(H))*log(H)
     K = 0
     for (i in 0:q) {
 
@@ -302,8 +292,8 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
 
         k1 = (1+Alpha*(p*j+1)*log(H))*(p*i+1)*log(H)
         k2 = (1+Alpha*(p*j+p+1)*log(H))*(p*i+1)*log(H)
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*k1
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*k2
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*k1
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*k2
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -319,23 +309,23 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    m11 = m21 = (Alpha*Gamma*t.time^(-Gamma)*log(t.time)*H)/(1+Alpha*log(H))
-    m12 = 1-Gamma*log(t.time)+(Alpha+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-    m22 = 1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-    M1 = t.time^(-Gamma-1)*H^(Alpha+1)*(1+Alpha*log(H))*(m11+m12)
-    M2 = t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Alpha*log(H))*(m21+m22)
+    H = (1+t.event^(-Gamma))^(-1)
+    m11 = m21 = (Alpha*Gamma*t.event^(-Gamma)*log(t.event)*H)/(1+Alpha*log(H))
+    m12 = 1-Gamma*log(t.event)+(Alpha+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+    m22 = 1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+    M1 = t.event^(-Gamma-1)*H^(Alpha+1)*(1+Alpha*log(H))*(m11+m12)
+    M2 = t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Alpha*log(H))*(m21+m22)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k11 = (Alpha*(p*j+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)/(1+Alpha*(p*j+1)*log(H))
-        k21 = (Alpha*(p*j+p+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)/(1+Alpha*(p*j+p+1)*log(H))
-        k12 = 1-Gamma*log(t.time)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k22 = 1-Gamma*log(t.time)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        K1  = t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+1)*log(H))*(k11+k12)
-        K2  = t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+p+1)*log(H))*(k21+k22)
+        k11 = (Alpha*(p*j+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)/(1+Alpha*(p*j+1)*log(H))
+        k21 = (Alpha*(p*j+p+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)/(1+Alpha*(p*j+p+1)*log(H))
+        k12 = 1-Gamma*log(t.event)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k22 = 1-Gamma*log(t.event)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        K1  = t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+1)*log(H))*(k11+k12)
+        K2  = t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(1+Alpha*(p*j+p+1)*log(H))*(k21+k22)
         K   = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -351,19 +341,19 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    m21 = 1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-    m22 = k12 = k22 = Gamma*t.time^(-Gamma)*log(t.time)*H/log(H)
-    M2  = Alpha*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(m21+m22)
+    H = (1+t.event^(-Gamma))^(-1)
+    m21 = 1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+    m22 = k12 = k22 = Gamma*t.event^(-Gamma)*log(t.event)*H/log(H)
+    M2  = Alpha*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(m21+m22)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k11 = 1-Gamma*log(t.time)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k21 = 1-Gamma*log(t.time)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        K1  = t.time^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)*(k11+k12)
-        K2  = t.time^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)*(k21+k22)
+        k11 = 1-Gamma*log(t.event)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k21 = 1-Gamma*log(t.event)+(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        K1  = t.event^(-Gamma-1)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)*(k11+k12)
+        K2  = t.event^(-Gamma-1)*H^(Alpha*(p*j+p+1)+Beta*(p*i+1)+1)*(p*i+1)*log(H)*(k21+k22)
         K   = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -379,16 +369,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Beta*Gamma*t.time^(-Gamma-1)*H^(Beta+1)
-    M2 = Beta*Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Beta*Gamma*t.event^(-Gamma-1)*H^(Beta+1)
+    M2 = Beta*Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
         K1 = H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)
-        K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*K1*(1-(1+p*q)*H^(Beta*p))*t.time^(-Gamma-1)
+        K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*K1*(1-(1+p*q)*H^(Beta*p))*t.event^(-Gamma-1)
 
       }
 
@@ -403,15 +393,15 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M2 = Beta*Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M2 = Beta*Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*i+1)*log(H)
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*i+1)*log(H)
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*i+1)*log(H)
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*i+1)*log(H)
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -427,15 +417,15 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M2 = Beta*Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)^2
+    H = (1+t.event^(-Gamma))^(-1)
+    M2 = Beta*Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)^2
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*i+1)^2*log(H)^2
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*i+1)^2*log(H)^2
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*i+1)^2*log(H)^2
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*i+1)^2*log(H)^2
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -451,16 +441,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Gamma*t.time^(-Gamma-1)*H^(Beta+1)*(1+Beta*log(H))
-    M2 = Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Beta*log(H))
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Gamma*t.event^(-Gamma-1)*H^(Beta+1)*(1+Beta*log(H))
+    M2 = Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Beta*log(H))
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(1+Beta*(p*j+1)*log(H))
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(1+Beta*(p*j+p+1)*log(H))
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(1+Beta*(p*j+1)*log(H))
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(1+Beta*(p*j+p+1)*log(H))
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -476,16 +466,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Gamma*t.time^(-Gamma-1)*H^(Beta+1)*log(H)*(2+Beta*log(H))
-    M2 = Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(2+Beta*log(H))
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Gamma*t.event^(-Gamma-1)*H^(Beta+1)*log(H)*(2+Beta*log(H))
+    M2 = Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(2+Beta*log(H))
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*j+1)*log(H)*(2+Beta*(p*j+1)*log(H))
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*j+p+1)*log(H)*(2+Beta*(p*j+p+1)*log(H))
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*j+1)*log(H)*(2+Beta*(p*j+1)*log(H))
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*j+p+1)*log(H)*(2+Beta*(p*j+p+1)*log(H))
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -501,18 +491,18 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Beta*t.time^(-Gamma-1)*H^(Beta+1)*(1-Gamma*log(t.time)+(Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)
-    M2 = Beta*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Beta*t.event^(-Gamma-1)*H^(Beta+1)*(1-Gamma*log(t.event)+(Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)
+    M2 = Beta*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k1 = (Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k2 = (Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        K1 = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(1-Gamma*log(t.time)+k1)
-        K2 = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(1-Gamma*log(t.time)+k2)
+        k1 = (Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k2 = (Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        K1 = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(1-Gamma*log(t.event)+k1)
+        K2 = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(1-Gamma*log(t.event)+k2)
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -528,26 +518,26 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    m11 = (1-Gamma*log(t.time)+(Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)*(-log(t.time)+(Beta+1)*t.time^(-Gamma)*log(t.time)*H)
-    m21 = (1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)*(-log(t.time)+(Alpha+Beta+1)*t.time^(-Gamma)*log(t.time)*H)
-    m12 = (Beta+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-    m22 = (Alpha+Beta+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-    M1  = Beta*t.time^(-Gamma-1)*H^(Beta+1)*(m11+m12)
-    M2  = Beta*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(m21+m22)
+    H = (1+t.event^(-Gamma))^(-1)
+    m11 = (1-Gamma*log(t.event)+(Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)*(-log(t.event)+(Beta+1)*t.event^(-Gamma)*log(t.event)*H)
+    m21 = (1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)*(-log(t.event)+(Alpha+Beta+1)*t.event^(-Gamma)*log(t.event)*H)
+    m12 = (Beta+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+    m22 = (Alpha+Beta+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+    M1  = Beta*t.event^(-Gamma-1)*H^(Beta+1)*(m11+m12)
+    M2  = Beta*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(m21+m22)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k11 = 1-Gamma*log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k21 = 1-Gamma*log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k12 = -log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*t.time^(-Gamma)*log(t.time)*H
-        k22 = -log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*t.time^(-Gamma)*log(t.time)*H
-        k13 = (Alpha*(p*i+1)+Beta*(p*j+1)+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-        k23 = (Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*log(t.time)*t.time^(-Gamma)*H*(1-Gamma*log(t.time)+log(t.time)*Gamma*t.time^(-Gamma)*H)-log(t.time)
-        K1  = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(k11*k12+k13)
-        K2  = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(k21*k22+k23)
+        k11 = 1-Gamma*log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k21 = 1-Gamma*log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k12 = -log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*t.event^(-Gamma)*log(t.event)*H
+        k22 = -log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*t.event^(-Gamma)*log(t.event)*H
+        k13 = (Alpha*(p*i+1)+Beta*(p*j+1)+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+        k23 = (Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*log(t.event)*t.event^(-Gamma)*H*(1-Gamma*log(t.event)+log(t.event)*Gamma*t.event^(-Gamma)*H)-log(t.event)
+        K1  = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(k11*k12+k13)
+        K2  = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(k21*k22+k23)
         K   = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -563,8 +553,8 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M2 = Gamma*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Beta*log(H))*log(H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M2 = Gamma*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Beta*log(H))*log(H)
     K = 0
     for (i in 0:q) {
 
@@ -572,8 +562,8 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
 
         k1 = (1+Beta*(p*j+1)*log(H))*(p*i+1)*log(H)
         k2 = (1+Beta*(p*j+p+1)*log(H))*(p*i+1)*log(H)
-        K1 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*k1
-        K2 = Gamma*t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*k2
+        K1 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*k1
+        K2 = Gamma*t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*k2
         K  = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -589,19 +579,19 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    m21 = 1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-    m22 = k12 = k22 = Gamma*t.time^(-Gamma)*log(t.time)*H/log(H)
-    M2  = Beta*t.time^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(m21+m22)
+    H = (1+t.event^(-Gamma))^(-1)
+    m21 = 1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+    m22 = k12 = k22 = Gamma*t.event^(-Gamma)*log(t.event)*H/log(H)
+    M2  = Beta*t.event^(-Gamma-1)*H^(Alpha+Beta+1)*log(H)*(m21+m22)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k11 = 1-Gamma*log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k21 = 1-Gamma*log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        K1  = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*i+1)*log(H)*(k11+k12)
-        K2  = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*i+1)*log(H)*(k21+k22)
+        k11 = 1-Gamma*log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k21 = 1-Gamma*log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        K1  = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(p*i+1)*log(H)*(k11+k12)
+        K2  = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(p*i+1)*log(H)*(k21+k22)
         K   = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -617,23 +607,23 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    m11 = m21 = (Beta*Gamma*t.time^(-Gamma)*log(t.time)*H)/(1+Beta*log(H))
-    m12 = 1-Gamma*log(t.time)+(Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-    m22 = 1-Gamma*log(t.time)+(Alpha+Beta+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-    M1 = t.time^(-Gamma-1)*H^(Beta+1)*(1+Beta*log(H))*(m11+m12)
-    M2 = t.time^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Beta*log(H))*(m21+m22)
+    H = (1+t.event^(-Gamma))^(-1)
+    m11 = m21 = (Beta*Gamma*t.event^(-Gamma)*log(t.event)*H)/(1+Beta*log(H))
+    m12 = 1-Gamma*log(t.event)+(Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+    m22 = 1-Gamma*log(t.event)+(Alpha+Beta+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+    M1 = t.event^(-Gamma-1)*H^(Beta+1)*(1+Beta*log(H))*(m11+m12)
+    M2 = t.event^(-Gamma-1)*H^(Alpha+Beta+1)*(1+Beta*log(H))*(m21+m22)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:(q-1)) {
 
-        k11 = (Beta*(p*j+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)/(1+Beta*(p*j+1)*log(H))
-        k21 = (Beta*(p*j+p+1)*Gamma*t.time^(-Gamma)*log(t.time)*H)/(1+Beta*(p*j+p+1)*log(H))
-        k12 = 1-Gamma*log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        k22 = 1-Gamma*log(t.time)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.time^(-Gamma)*log(t.time)*H
-        K1  = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(1+Beta*(p*j+1)*log(H))*(k11+k12)
-        K2  = t.time^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(1+Beta*(p*j+p+1)*log(H))*(k21+k22)
+        k11 = (Beta*(p*j+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)/(1+Beta*(p*j+1)*log(H))
+        k21 = (Beta*(p*j+p+1)*Gamma*t.event^(-Gamma)*log(t.event)*H)/(1+Beta*(p*j+p+1)*log(H))
+        k12 = 1-Gamma*log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        k22 = 1-Gamma*log(t.event)+(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*Gamma*t.event^(-Gamma)*log(t.event)*H
+        K1  = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+1)+1)*(1+Beta*(p*j+1)*log(H))*(k11+k12)
+        K2  = t.event^(-Gamma-1)*H^(Alpha*(p*i+1)+Beta*(p*j+p+1)+1)*(1+Beta*(p*j+p+1)*log(H))*(k21+k22)
         K   = K+choose(q,i)*choose(q-1,j)*(-1)^(i+j)*(K1-(1+p*q)*K2)
 
       }
@@ -649,7 +639,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
+    H = (1+t.event^(-Gamma))^(-1)
     K = 0
     for (i in 0:q) {
 
@@ -670,7 +660,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
+    H = (1+t.event^(-Gamma))^(-1)
     K = 0
     for (i in 0:q) {
 
@@ -691,7 +681,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
+    H = (1+t.event^(-Gamma))^(-1)
     K = 0
     for (i in 0:q) {
 
@@ -713,7 +703,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
+    H = (1+t.event^(-Gamma))^(-1)
     K = 0
     for (i in 0:q) {
 
@@ -734,7 +724,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
+    H = (1+t.event^(-Gamma))^(-1)
     K = 0
     for (i in 0:q) {
 
@@ -756,17 +746,17 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Alpha*log(t.time)*t.time^(-Gamma)*H^(Alpha+1)
-    M2 = Beta*log(t.time)*t.time^(-Gamma)*H^(Beta+1)
-    M3 = (Alpha+Beta)*log(t.time)*t.time^(-Gamma)*H^(Alpha+Beta+1)
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Alpha*log(t.event)*t.event^(-Gamma)*H^(Alpha+1)
+    M2 = Beta*log(t.event)*t.event^(-Gamma)*H^(Beta+1)
+    M3 = (Alpha+Beta)*log(t.event)*t.event^(-Gamma)*H^(Alpha+Beta+1)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:q) {
 
         k = H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)
-        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*(Alpha*(p*j+1)+Beta*(p*i+1))*log(t.time)*t.time^(-Gamma)*k
+        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*(Alpha*(p*j+1)+Beta*(p*i+1))*log(t.event)*t.event^(-Gamma)*k
 
       }
 
@@ -781,17 +771,17 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = Alpha*t.time^(-Gamma)*log(t.time)*H^(Alpha+1)*(-log(t.time)+(Alpha+1)*t.time^(-Gamma)*log(t.time)*H)
-    M2 = Beta*t.time^(-Gamma)*log(t.time)*H^(Beta+1)*(-log(t.time)+(Beta+1)*t.time^(-Gamma)*log(t.time)*H)
-    M3 = (Alpha+Beta)*t.time^(-Gamma)*log(t.time)*H^(Alpha+Beta+1)*(-log(t.time)+(Alpha+Beta+1)*t.time^(-Gamma)*log(t.time)*H)
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = Alpha*t.event^(-Gamma)*log(t.event)*H^(Alpha+1)*(-log(t.event)+(Alpha+1)*t.event^(-Gamma)*log(t.event)*H)
+    M2 = Beta*t.event^(-Gamma)*log(t.event)*H^(Beta+1)*(-log(t.event)+(Beta+1)*t.event^(-Gamma)*log(t.event)*H)
+    M3 = (Alpha+Beta)*t.event^(-Gamma)*log(t.event)*H^(Alpha+Beta+1)*(-log(t.event)+(Alpha+Beta+1)*t.event^(-Gamma)*log(t.event)*H)
     K = 0
     for (i in 0:q) {
 
       for (j in 0:q) {
 
-        k = (Alpha*(p*j+1)+Beta*(p*i+1))*t.time^(-Gamma)*log(t.time)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)
-        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*k*(-log(t.time)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*t.time^(-Gamma)*log(t.time)*H)
+        k = (Alpha*(p*j+1)+Beta*(p*i+1))*t.event^(-Gamma)*log(t.event)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)
+        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*k*(-log(t.event)+(Alpha*(p*j+1)+Beta*(p*i+1)+1)*t.event^(-Gamma)*log(t.event)*H)
 
       }
 
@@ -806,7 +796,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
+    H = (1+t.event^(-Gamma))^(-1)
     K = 0
     for (i in 0:q) {
 
@@ -827,16 +817,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = t.time^(-Gamma)*log(t.time)*H^(Alpha+1)*(1+Alpha*log(H))
-    M2 = t.time^(-Gamma)*log(t.time)*H^(Alpha+Beta+1)*(1+(Alpha+Beta)*log(H))
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = t.event^(-Gamma)*log(t.event)*H^(Alpha+1)*(1+Alpha*log(H))
+    M2 = t.event^(-Gamma)*log(t.event)*H^(Alpha+Beta+1)*(1+(Alpha+Beta)*log(H))
     K = 0
     for (i in 0:q) {
 
       for (j in 0:q) {
 
         k = (p*j+1)*(1+(Alpha*(p*j+1)+Beta*(p*i+1))*log(H))
-        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*t.time^(-Gamma)*log(t.time)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*k
+        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*t.event^(-Gamma)*log(t.event)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*k
 
       }
 
@@ -851,16 +841,16 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     Beta  = exp(par[2])
     Gamma = exp(par[3])
 
-    H = (1+t.time^(-Gamma))^(-1)
-    M1 = t.time^(-Gamma)*log(t.time)*H^(Beta+1)*(1+Beta*log(H))
-    M2 = t.time^(-Gamma)*log(t.time)*H^(Alpha+Beta+1)*(1+(Alpha+Beta)*log(H))
+    H = (1+t.event^(-Gamma))^(-1)
+    M1 = t.event^(-Gamma)*log(t.event)*H^(Beta+1)*(1+Beta*log(H))
+    M2 = t.event^(-Gamma)*log(t.event)*H^(Alpha+Beta+1)*(1+(Alpha+Beta)*log(H))
     K = 0
     for (i in 0:q) {
 
       for (j in 0:q) {
 
         k = (p*i+1)*(1+(Alpha*(p*j+1)+Beta*(p*i+1))*log(H))
-        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*t.time^(-Gamma)*log(t.time)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*k
+        K = K+choose(q,i)*choose(q,j)*(-1)^(i+j)*t.event^(-Gamma)*log(t.event)*H^(Alpha*(p*j+1)+Beta*(p*i+1)+1)*k
 
       }
 
@@ -871,7 +861,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
   }
   logL_func  = function(par) {
 
-    return(sum(t.event1*log(f1_func(par)))+sum(t.event2*log(f2_func(par)))+sum((1-t.event1-t.event2)*log(Fb_func(par))))
+    return(sum(event1*log(f1_func(par)))+sum(event2*log(f2_func(par)))+sum((1-event1-event2)*log(Fb_func(par))))
 
   }
   score_func = function(par) {
@@ -880,19 +870,19 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_A1 = f2_A1_func(par)*exp(par[1])/f2_func(par)
     log_Fb_A1 = Fb_A1_func(par)*exp(par[1])/Fb_func(par)
 
-    s1 = sum(t.event1*log_f1_A1)+sum(t.event2*log_f2_A1)+sum((1-t.event1-t.event2)*log_Fb_A1)
+    s1 = sum(event1*log_f1_A1)+sum(event2*log_f2_A1)+sum((1-event1-event2)*log_Fb_A1)
 
     log_f1_B1 = f1_B1_func(par)*exp(par[2])/f1_func(par)
     log_f2_B1 = f2_B1_func(par)*exp(par[2])/f2_func(par)
     log_Fb_B1 = Fb_B1_func(par)*exp(par[2])/Fb_func(par)
 
-    s2 = sum(t.event1*log_f1_B1)+sum(t.event2*log_f2_B1)+sum((1-t.event1-t.event2)*log_Fb_B1)
+    s2 = sum(event1*log_f1_B1)+sum(event2*log_f2_B1)+sum((1-event1-event2)*log_Fb_B1)
 
     log_f1_G1 = f1_G1_func(par)*exp(par[3])/f1_func(par)
     log_f2_G1 = f2_G1_func(par)*exp(par[3])/f2_func(par)
     log_Fb_G1 = Fb_G1_func(par)*exp(par[3])/Fb_func(par)
 
-    s3 = sum(t.event1*log_f1_G1)+sum(t.event2*log_f2_G1)+sum((1-t.event1-t.event2)*log_Fb_G1)
+    s3 = sum(event1*log_f1_G1)+sum(event2*log_f2_G1)+sum((1-event1-event2)*log_Fb_G1)
 
     return(c(s1,s2,s3))
 
@@ -909,7 +899,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_A2 = B1-B2
     log_Fb_A2 = C1-C2
 
-    h11 = sum(t.event1*log_f1_A2)+sum(t.event2*log_f2_A2)+sum((1-t.event1-t.event2)*log_Fb_A2)
+    h11 = sum(event1*log_f1_A2)+sum(event2*log_f2_A2)+sum((1-event1-event2)*log_Fb_A2)
 
     A1 = (f1_B2_func(par)*exp(2*par[2])+f1_B1_func(par)*exp(par[2]))/f1_func(par)
     B1 = (f2_B2_func(par)*exp(2*par[2])+f2_B1_func(par)*exp(par[2]))/f2_func(par)
@@ -921,7 +911,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_B2 = B1-B2
     log_Fb_B2 = C1-C2
 
-    h22 = sum(t.event1*log_f1_B2)+sum(t.event2*log_f2_B2)+sum((1-t.event1-t.event2)*log_Fb_B2)
+    h22 = sum(event1*log_f1_B2)+sum(event2*log_f2_B2)+sum((1-event1-event2)*log_Fb_B2)
 
     A1 = (f1_G2_func(par)*exp(2*par[3])+f1_G1_func(par)*exp(par[3]))/f1_func(par)
     B1 = (f2_G2_func(par)*exp(2*par[3])+f2_G1_func(par)*exp(par[3]))/f2_func(par)
@@ -933,7 +923,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_G2 = B1-B2
     log_Fb_G2 = C1-C2
 
-    h33 = sum(t.event1*log_f1_G2)+sum(t.event2*log_f2_G2)+sum((1-t.event1-t.event2)*log_Fb_G2)
+    h33 = sum(event1*log_f1_G2)+sum(event2*log_f2_G2)+sum((1-event1-event2)*log_Fb_G2)
 
     A1 = (f1_AB_func(par)*exp(par[1]+par[2]))/f1_func(par)
     B1 = (f2_AB_func(par)*exp(par[1]+par[2]))/f2_func(par)
@@ -945,7 +935,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_AB = B1-B2
     log_Fb_AB = C1-C2
 
-    h12 = h21 = sum(t.event1*log_f1_AB)+sum(t.event2*log_f2_AB)+sum((1-t.event1-t.event2)*log_Fb_AB)
+    h12 = h21 = sum(event1*log_f1_AB)+sum(event2*log_f2_AB)+sum((1-event1-event2)*log_Fb_AB)
 
     A1 = (f1_AG_func(par)*exp(par[1]+par[3]))/f1_func(par)
     B1 = (f2_AG_func(par)*exp(par[1]+par[3]))/f2_func(par)
@@ -957,7 +947,7 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_AG = B1-B2
     log_Fb_AG = C1-C2
 
-    h13 = h31 = sum(t.event1*log_f1_AG)+sum(t.event2*log_f2_AG)+sum((1-t.event1-t.event2)*log_Fb_AG)
+    h13 = h31 = sum(event1*log_f1_AG)+sum(event2*log_f2_AG)+sum((1-event1-event2)*log_Fb_AG)
 
     A1 = (f1_BG_func(par)*exp(par[2]+par[3]))/f1_func(par)
     B1 = (f2_BG_func(par)*exp(par[2]+par[3]))/f2_func(par)
@@ -969,23 +959,20 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
     log_f2_BG = B1-B2
     log_Fb_BG = C1-C2
 
-    h23 = h32 = sum(t.event1*log_f1_BG)+sum(t.event2*log_f2_BG)+sum((1-t.event1-t.event2)*log_Fb_BG)
+    h23 = h32 = sum(event1*log_f1_BG)+sum(event2*log_f2_BG)+sum((1-event1-event2)*log_Fb_BG)
 
     return(matrix(c(h11,h12,h13,h21,h22,h23,h31,h32,h33),3,3))
 
   }
 
-  t.time = t.time-eta
-  xbar = sum(t.time*t.event1)/sum(t.event1) # initial guess
-  ybar = sum(t.time*t.event2)/sum(t.event2) # initial guess
+  t.event = t.event-eta
+  xbar = sum(t.event*event1)/sum(event1) # initial guess
+  ybar = sum(t.event*event2)/sum(event2) # initial guess
 
   par_old = c(log(xbar),log(ybar),log(Gamma.0))
   count  = 0
   random = 0
-  na     = 0
-  div    = 0
 
-  set.seed(615)
   repeat {
 
     check1 = f1_func(par_old)
@@ -1002,7 +989,6 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
 
       count  = 0
       random = random+1
-      na     = na+1
       next
 
     }
@@ -1018,7 +1004,6 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
 
       count  = 0
       random = random+1
-      div    = div+1
       next
 
     }
@@ -1033,7 +1018,6 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
 
       count  = 0
       random = random+1
-      div    = div+1
       next
 
     }
@@ -1071,27 +1055,6 @@ MLE.GFGM.BurrIII = function(t.time,t.event1,t.event2,D,p,q,theta,eta = 0,Gamma.0
   Alpha.res = c(Estimate = Alpha_hat,SE = Alpha_se,CI.lower = CI_Alpha[1],CI.upper = CI_Alpha[2])
   Beta.res  = c(Estimate = Beta_hat, SE = Beta_se, CI.lower = CI_Beta[1], CI.upper = CI_Beta[2] )
   Gamma.res = c(Estimate = Gamma_hat,SE = Gamma_se,CI.lower = CI_Gamma[1],CI.upper = CI_Gamma[2])
-
-  if (Sdist.plot) {
-
-    t.time = t.time+eta
-    upper.b = max(t.time)
-    lower.b = min(t.time)
-    t.time.grid = seq(lower.b,upper.b,length.out = 200)
-    Sdist.GFGM.spline1 = Sdist.GFGM.spline(t.time,t.event1,t.event2,p,q,theta,1)
-    Sdist.GFGM.spline2 = Sdist.GFGM.spline(t.time,t.event1,t.event2,p,q,theta,2)
-    Sdist.GFGM.BurrIII1 = Sdist.GFGM.BurrIII(t.time.grid,Alpha_hat,Beta_hat,Gamma_hat,p,q,theta,1,eta = eta)
-    Sdist.GFGM.BurrIII2 = Sdist.GFGM.BurrIII(t.time.grid,Alpha_hat,Beta_hat,Gamma_hat,p,q,theta,2,eta = eta)
-    plot(x = cuminc(t.time,t.event1+2*t.event2),xlab = "t",wh = c(-1,-1),xlim = c(lower.b,upper.b),ylab = "Sub-distribution")
-    lines(t.time.grid,Sdist.GFGM.spline1,col = "red")
-    lines(t.time.grid,Sdist.GFGM.spline2,col = "red",lty = 2)
-    lines(t.time.grid,Sdist.GFGM.BurrIII1,col = "blue")
-    lines(t.time.grid,Sdist.GFGM.BurrIII2,col = "blue",lty = 2)
-    legend("topleft",c("para 1","para 2","semi-para 1","semi-para 2","non-para 1","non-para 2"),
-           lty = c(1,2,1,2,1,2),col = c("blue","blue","red","red","black","black"))
-    t.time = t.time-eta
-
-  }
 
   if (Gamma_hat <= 1) {
 

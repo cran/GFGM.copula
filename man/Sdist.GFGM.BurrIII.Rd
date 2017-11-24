@@ -2,12 +2,12 @@
 % Please edit documentation in R/Sdist.GFGM.BurrIII.R
 \name{Sdist.GFGM.BurrIII}
 \alias{Sdist.GFGM.BurrIII}
-\title{Sub-distribution function under the generalized FGM copula with the Burr III margins}
+\title{Sub-distribution functions under the generalized FGM copula with the Burr III margins}
 \usage{
-Sdist.GFGM.BurrIII(t.time, Alpha, Beta, Gamma, p, q, theta, cause, eta = 0)
+Sdist.GFGM.BurrIII(time, Alpha, Beta, Gamma, p, q, theta, eta = 0)
 }
 \arguments{
-\item{t.time}{Time.}
+\item{time}{Vector of times.}
 
 \item{Alpha}{Positive shape parameter for the Burr III margin (failure cause 1).}
 
@@ -17,30 +17,29 @@ Sdist.GFGM.BurrIII(t.time, Alpha, Beta, Gamma, p, q, theta, cause, eta = 0)
 
 \item{p}{Copula parameter that greater than or equal to 1.}
 
-\item{q}{Copula parameter that greater than or equal to 1 (integer).}
+\item{q}{Copula parameter that greater than 1 (integer).}
 
 \item{theta}{Copula parameter with restricted range.}
-
-\item{cause}{Failure cause.}
 
 \item{eta}{Location parameter with default value 0.}
 }
 \value{
-Probability of an object fails at \code{t.time} due to the failure cause 1 or 2.
+\item{time}{Failure times}
+\item{Sdist.1}{Probability of an object fails due to the failure cause 1.}
+\item{Sdist.2}{Probability of an object fails due to the failure cause 2.}
 }
 \description{
-Sub-distribution function under the generalized FGM copula with the Burr III margins.
+Sub-distribution functions under the generalized FGM copula with the Burr III margins.
 }
 \details{
 The original paper is submitted for review.
 
-The copula parameter \code{q} is restricted to be integer due to the binominal theorem.
-The restricted range of \eqn{\theta} is given in \code{Dependence.GFGM}
+The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
+The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
 }
 \examples{
 library(GFGM.copula)
-Sdist.GFGM.BurrIII(2,1,1,1,3,2,0.5,1,1)
-Sdist.GFGM.BurrIII(2,1,1,1,3,2,0.5,2,1)
+Sdist.GFGM.BurrIII(c(1:5),1,1,1,3,2,0.75,eta = 1)
 }
 \references{
 Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
@@ -48,5 +47,5 @@ Shih and Emura (2016) Bivariate dependence measures and bivariate competing risk
 Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 }
 \seealso{
-\code{\link{Dependence.GFGM}}
+\code{\link{MLE.GFGM.BurrIII}}, \code{\link{Dependence.GFGM}}
 }
