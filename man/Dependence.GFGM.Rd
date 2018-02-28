@@ -22,7 +22,7 @@ Dependence.GFGM(p, q, theta)
 Compute Kendall's tau and Spearman's rho with their boundaries under the generalized FGM copula.
 }
 \details{
-The admissiable range of \code{theta} (\eqn{\theta}) is
+The admissible range of \code{theta} (\eqn{\theta}) is
 \deqn{-\min\bigg\{1,\frac{1}{p^{2q}}\bigg(\frac{1+pq}{q-1}\bigg)^{2q-2}\bigg\} \leq \theta \leq \frac{1}{p^{q}}\bigg(\frac{1+pq}{q-1}\bigg)^{q-1}.}
 See also Shih and Emura (2016) for details.
 }

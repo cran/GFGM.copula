@@ -19,7 +19,7 @@
 #' @details The original paper is submitted for review.
 #'
 #' The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-#' The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 #'
 #' @return \item{n}{Sample size.}
 #' \item{count}{Iteration number.}
@@ -32,7 +32,7 @@
 #' \item{logL}{Log-likelihood value under the fitted model.}
 #'
 #' @references Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
-#' @references Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+#' @references Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 #' @seealso \code{\link{Dependence.GFGM}}
 #' @importFrom stats qnorm runif
 #' @importFrom utils globalVariables

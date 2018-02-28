@@ -36,7 +36,7 @@ The original paper is submitted for review.
 
 The splines coefficients \code{g1} and \code{g2} are usually computed by \code{MLE.GFGM.spline}.
 The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 }
 \examples{
 library(GFGM.copula)
@@ -45,7 +45,7 @@ Sdist.GFGM.spline(seq(1,5,1),rep(0.1,5),rep(0.1,5),1,5,3,2,0.75)
 \references{
 Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
 
-Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 }
 \seealso{
 \code{\link{MLE.GFGM.spline}}, \code{\link{Dependence.GFGM}}

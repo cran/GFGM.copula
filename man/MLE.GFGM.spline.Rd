@@ -4,7 +4,7 @@
 \alias{MLE.GFGM.spline}
 \title{Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the marginal distributions approximated by splines}
 \usage{
-MLE.GFGM.spline(t.event, event1, event2, p, q, theta)
+MLE.GFGM.spline(t.event, event1, event2, p, q, theta, h.plot = TRUE)
 }
 \arguments{
 \item{t.event}{Vector of the observed failure times.}
@@ -18,10 +18,15 @@ MLE.GFGM.spline(t.event, event1, event2, p, q, theta)
 \item{q}{Copula parameter that greater than 1 (integer).}
 
 \item{theta}{Copula parameter with restricted range.}
+
+\item{h.plot}{Plot hazard functions if \code{TRUE}.}
 }
 \value{
+\item{n}{Sample size.}
 \item{g1}{Maximum likelihood estimator of the splines coefficients for the failure cause 1.}
 \item{g2}{Maximum likelihood estimator of the splines coefficients for the failure cause 2.}
+\item{g1.var}{Covariance matrix of splines coefficients estimates for the failure cause 1.}
+\item{g2.var}{Covariance matrix of splines coefficients estimates for the failure cause 2.}
 }
 \description{
 Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the marginal distributions approximated by splines.
@@ -30,7 +35,7 @@ Maximum likelihood estimation for bivariate dependent competing risks data under
 The original paper is submitted for review.
 
 The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 }
 \examples{
 con   = c(16,224,16,80,128,168,144,176,176,568,392,576,128,56,112,160,384,600,40,416,
@@ -62,7 +67,7 @@ MLE.GFGM.spline(t.event,event1,event2,3,2,0.75)
 \references{
 Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
 
-Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 }
 \seealso{
 \code{\link{Dependence.GFGM}}

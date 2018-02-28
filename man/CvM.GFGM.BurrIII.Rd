@@ -5,7 +5,7 @@
 \title{The Cramer-von Mises type statistics under the generalized FGM copula}
 \usage{
 CvM.GFGM.BurrIII(t.event, event1, event2, Alpha, Beta, Gamma, g1, g2, p, q,
-  theta, eta = 0)
+  theta, eta = 0, Sdist.plot = TRUE)
 }
 \arguments{
 \item{t.event}{Vector of the observed failure times.}
@@ -31,10 +31,12 @@ CvM.GFGM.BurrIII(t.event, event1, event2, Alpha, Beta, Gamma, g1, g2, p, q,
 \item{theta}{Copula parameter with restricted range.}
 
 \item{eta}{Location parameter with default value 0.}
+
+\item{Sdist.plot}{Plot sub-distribution functions if \code{TRUE}.}
 }
 \value{
-\item{S1}{Cramer-von Mises type statistic based on parametric and non-parametric estimators of sub-distribution functions.}
-\item{S2}{Cramer-von Mises type statistic based on semi-parametric and non-parametric estimators of sub-distribution functions.}
+\item{S.overall}{Cramer-von Mises type statistic based on parametric and non-parametric estimators of sub-distribution functions for testing overall model.}
+\item{S.GFGM}{Cramer-von Mises type statistic based on semi-parametric and non-parametric estimators of sub-distribution functions for testing the generalized FGM copula.}
 }
 \description{
 Compute the Cramer-von Mises type statistics under the generalized FGM copula.
@@ -43,7 +45,7 @@ Compute the Cramer-von Mises type statistics under the generalized FGM copula.
 The original paper is submitted for review.
 
 The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 }
 \examples{
 con   = c(16,224,16,80,128,168,144,176,176,568,392,576,128,56,112,160,384,600,40,416,
@@ -74,15 +76,13 @@ library(GFGM.copula)
 #Alpha = res.BurrIII$Alpha[1]
 #Beta = res.BurrIII$Beta[1]
 #Gamma = res.BurrIII$Gamma[1]
-
 #res.spline = MLE.GFGM.spline(t.event,event1,event2,3,2,0.75)
 #g1 = res.spline$g1
 #g2 = res.spline$g2
-
 #CvM.GFGM.BurrIII(t.event,event1,event2,Alpha,Beta,Gamma,g1,g2,3,2,0.75,eta = -71)
 }
 \references{
-Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 }
 \seealso{
 \code{\link{Dependence.GFGM}}, \code{\link{MLE.GFGM.BurrIII}}, \code{\link{MLE.GFGM.spline}}

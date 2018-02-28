@@ -12,19 +12,21 @@
 #' @param q Copula parameter that greater than 1 (integer).
 #' @param theta Copula parameter with restricted range.
 #' @param eta Location parameter with default value 0.
+#' @param Sdist.plot Plot sub-distribution functions if \code{TRUE}.
 #' @description Compute the Cramer-von Mises type statistics under the generalized FGM copula.
 #' @details The original paper is submitted for review.
 #'
 #' The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-#' The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 #'
-#' @return \item{S1}{Cramer-von Mises type statistic based on parametric and non-parametric estimators of sub-distribution functions.}
-#' \item{S2}{Cramer-von Mises type statistic based on semi-parametric and non-parametric estimators of sub-distribution functions.}
+#' @return \item{S.overall}{Cramer-von Mises type statistic based on parametric and non-parametric estimators of sub-distribution functions for testing overall model.}
+#' \item{S.GFGM}{Cramer-von Mises type statistic based on semi-parametric and non-parametric estimators of sub-distribution functions for testing the generalized FGM copula.}
 #'
-#' @references Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+#' @references Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 #' @seealso \code{\link{Dependence.GFGM}}, \code{\link{MLE.GFGM.BurrIII}}, \code{\link{MLE.GFGM.spline}}
 #' @importFrom cmprsk cuminc timepoints
 #' @importFrom utils globalVariables
+#' @importFrom graphics legend lines plot
 #' @export
 #'
 #' @examples
@@ -56,14 +58,13 @@
 #' #Alpha = res.BurrIII$Alpha[1]
 #' #Beta = res.BurrIII$Beta[1]
 #' #Gamma = res.BurrIII$Gamma[1]
-#'
 #' #res.spline = MLE.GFGM.spline(t.event,event1,event2,3,2,0.75)
 #' #g1 = res.spline$g1
 #' #g2 = res.spline$g2
-#'
 #' #CvM.GFGM.BurrIII(t.event,event1,event2,Alpha,Beta,Gamma,g1,g2,3,2,0.75,eta = -71)
 
-CvM.GFGM.BurrIII = function(t.event,event1,event2,Alpha,Beta,Gamma,g1,g2,p,q,theta,eta = 0) {
+CvM.GFGM.BurrIII = function(t.event,event1,event2,Alpha,Beta,Gamma,g1,g2,p,q,
+                            theta,eta = 0,Sdist.plot = TRUE) {
 
   event = event1+2*event2
   t.data = data.frame(t.event,event)
@@ -81,9 +82,30 @@ CvM.GFGM.BurrIII = function(t.event,event1,event2,Alpha,Beta,Gamma,g1,g2,p,q,the
   Sdist.non1 = as.vector(timepoints(res.cuminc,t1.event)$est[1,])
   Sdist.non2 = as.vector(timepoints(res.cuminc,t2.event)$est[2,])
 
-  S1 = sum((Sdist.BIII1-Sdist.non1)^2)+sum((Sdist.BIII2-Sdist.non2)^2)
-  S2 = sum((Sdist.spline1-Sdist.non1)^2)+sum((Sdist.spline2-Sdist.non2)^2)
+  S.overall = sum((Sdist.BIII1-Sdist.non1)^2)+sum((Sdist.BIII2-Sdist.non2)^2)
+  S.GFGM    = sum((Sdist.spline1-Sdist.non1)^2)+sum((Sdist.spline2-Sdist.non2)^2)
 
-  return(list(S1 = S1,S2 = S2))
+  if (Sdist.plot) {
+
+    t.grid = seq(tmin,tmax,length.out = 500)
+    Sdist.BurrIII = Sdist.GFGM.BurrIII(t.grid,Alpha,Beta,Gamma,p,q,theta,eta)
+    Sdist.spline  = Sdist.GFGM.spline(t.grid,g1,g2,tmin,tmax,p,q,theta)
+
+    plot(res.cuminc$`1 1`$time,res.cuminc$`1 1`$est,xlab = "t",ylim = c(0,1),
+         xlim = c(tmin,tmax),ylab = "Sub-distribution",type = "s")
+    lines(Sdist.BurrIII[,1],Sdist.BurrIII[,2],type = "l",col = "blue")
+    lines(Sdist.spline[,1],Sdist.spline[,2],type = "l",col = "red")
+    legend("topleft",c("para 1","semi-para 1","non-para 1"),
+           lty = 1,col = c("blue","red","black"))
+
+    plot(res.cuminc$`1 2`$time,res.cuminc$`1 2`$est,xlab = "t",ylim = c(0,1),
+         xlim = c(tmin,tmax),ylab = "Sub-distribution",type = "s")
+    lines(Sdist.BurrIII[,1],Sdist.BurrIII[,3],type = "l",col = "blue",lty = 2)
+    lines(Sdist.spline[,1],Sdist.spline[,3],type = "l",col = "red",lty = 2)
+    legend("topleft",c("para 2","semi-para 2","non-para 2"),
+           lty = 2,col = c("blue","red","black"))
+
+  }
+  return(list(S.overall = S.overall,S.GFGM = S.GFGM))
 
 }

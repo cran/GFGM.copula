@@ -8,12 +8,12 @@
 #' @param Beta Positive shape parameter for the Burr III margin.
 #' @param Gamma Common positive shape parameter for the Burr III margins.
 #' @description Generate samples from the generalized FGM copula with the Burr III margins.
-#' @details The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+#' @details The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 #' @return \item{X}{\code{X} is asscoiated with the parameter \code{Alpha}.}
 #' \item{Y}{\code{Y} is asscoiated with the parameter \code{Beta}.}
 #'
 #' @references Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
-#' @references Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+#' @references Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 #' @seealso \code{\link{Dependence.GFGM}}
 #' @importFrom stats runif integrate uniroot
 #' @export

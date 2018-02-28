@@ -6,17 +6,21 @@
 #' @param p Copula parameter that greater than or equal to 1.
 #' @param q Copula parameter that greater than 1 (integer).
 #' @param theta Copula parameter with restricted range.
+#' @param h.plot Plot hazard functions if \code{TRUE}.
 #' @description Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the marginal distributions approximated by splines.
 #' @details The original paper is submitted for review.
 #'
 #' The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-#' The admissiable range of \code{theta} is given in \code{Dependence.GFGM}
+#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}
 #'
-#' @return \item{g1}{Maximum likelihood estimator of the splines coefficients for the failure cause 1.}
+#' @return \item{n}{Sample size.}
+#' \item{g1}{Maximum likelihood estimator of the splines coefficients for the failure cause 1.}
 #' \item{g2}{Maximum likelihood estimator of the splines coefficients for the failure cause 2.}
+#' \item{g1.var}{Covariance matrix of splines coefficients estimates for the failure cause 1.}
+#' \item{g2.var}{Covariance matrix of splines coefficients estimates for the failure cause 2.}
 #'
 #' @references Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
-#' @references Shih and Emura (2017) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+#' @references Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
 #' @seealso \code{\link{Dependence.GFGM}}
 #' @importFrom joint.Cox M.spline I.spline
 #' @export
@@ -48,7 +52,7 @@
 #' library(GFGM.copula)
 #' MLE.GFGM.spline(t.event,event1,event2,3,2,0.75)
 
-MLE.GFGM.spline = function(t.event,event1,event2,p,q,theta) {
+MLE.GFGM.spline = function(t.event,event1,event2,p,q,theta,h.plot = TRUE) {
 
   ### checking inputs ###
   n = length(t.event)
@@ -130,7 +134,7 @@ MLE.GFGM.spline = function(t.event,event1,event2,p,q,theta) {
   try.par = initial.par
   repeat {
 
-    res.spline = try(nlm(nlm.logL.spline,try.par,iterlim = 5000),silent = TRUE)
+    res.spline = try(nlm(nlm.logL.spline,try.par,iterlim = 5000,hessian = TRUE),silent = TRUE)
     if (class(res.spline) == "try-error") {
 
       try.par = initial.par + runif(10,-10,0)
@@ -145,7 +149,35 @@ MLE.GFGM.spline = function(t.event,event1,event2,p,q,theta) {
   par = res.spline$estimate
   g1 = exp(par[1:5])
   g2 = exp(par[6:10])
+  temp = (det(res.spline$hessian) == 0 | is.na(det(res.spline$hessian)))
+  if (temp) {
 
-  return(list(n = n,g1 = g1,g2 = g2))
+    var.matrix = solve(res.spline$hessian+rep(1e-5,10),tol = 1e-50)
+
+  } else if (det(solve(res.spline$hessian,tol = 1e-50)) < 0) {
+
+    var.matrix = solve(res.spline$hessian+rep(1e-5,10),tol = 1e-50)
+
+  } else {
+
+    var.matrix = solve(res.spline$hessian,tol = 1e-50)
+
+  }
+  g1.var = diag(g1)%*%var.matrix[1:5,1:5]%*%diag(g1)
+  g2.var = diag(g2)%*%var.matrix[6:10,6:10]%*%diag(g2)
+
+  if (h.plot) {
+
+    t.grid = seq(tmin,tmax,length.out = 500)
+    h1.hat = M.spline(t.grid,tmin,tmax)%*%g1
+    h2.hat = M.spline(t.grid,tmin,tmax)%*%g2
+    plot(t.grid,h1.hat,type = "l",lwd = 2,ylab = "hazard function",xlab = "t",col = "blue",
+         ylim = c(0,max(c(h1.hat,h2.hat))*1.2))
+    lines(t.grid,h2.hat,lwd = 2,col = "red")
+    legend("topleft",c("cause 1","cause 2"),lwd = 2,col = c("blue","red"))
+
+  }
+
+  return(list(n = n,g1 = g1,g2 = g2,g1.var = g1.var,g2.var = g2.var))
 
 }
