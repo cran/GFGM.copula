@@ -54,10 +54,8 @@ MLE.GFGM.BurrIII(t.event, event1, event2, D, p, q, theta, eta = 0,
 Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the Burr III margins.
 }
 \details{
-The original paper is submitted for review.
-
 The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-The admissible range of \code{theta} is given in \code{Dependence.GFGM}
+The admissible range of \code{theta} is given in \code{Dependence.GFGM}.
 }
 \examples{
 con   = c(16,224,16,80,128,168,144,176,176,568,392,576,128,56,112,160,384,600,40,416,
@@ -87,9 +85,9 @@ library(GFGM.copula)
 MLE.GFGM.BurrIII(t.event,event1,event2,5000,3,2,0.75,eta = -71)
 }
 \references{
-Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
 
-Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
 }
 \seealso{
 \code{\link{Dependence.GFGM}}

@@ -11,7 +11,7 @@
 #' \item{tau}{Kendall's tau.}
 #' \item{rho}{Spearman's rho.}
 #'
-#' @references Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+#' @references Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
 #' @export
 #'
 #' @examples

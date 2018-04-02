@@ -14,15 +14,13 @@
 #' @param eta Location parameter with default value 0.
 #' @param Sdist.plot Plot sub-distribution functions if \code{TRUE}.
 #' @description Compute the Cramer-von Mises type statistics under the generalized FGM copula.
-#' @details The original paper is submitted for review.
-#'
-#' The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}
+#' @details The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
+#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}.
 #'
 #' @return \item{S.overall}{Cramer-von Mises type statistic based on parametric and non-parametric estimators of sub-distribution functions for testing overall model.}
 #' \item{S.GFGM}{Cramer-von Mises type statistic based on semi-parametric and non-parametric estimators of sub-distribution functions for testing the generalized FGM copula.}
 #'
-#' @references Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
 #' @seealso \code{\link{Dependence.GFGM}}, \code{\link{MLE.GFGM.BurrIII}}, \code{\link{MLE.GFGM.spline}}
 #' @importFrom cmprsk cuminc timepoints
 #' @importFrom utils globalVariables

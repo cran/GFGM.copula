@@ -32,20 +32,18 @@ Sdist.GFGM.spline(time, g1, g2, tmin, tmax, p, q, theta)
 Sub-distribution functions under the generalized FGM copula with the marginal distributions approximated by splines.
 }
 \details{
-The original paper is submitted for review.
-
 The splines coefficients \code{g1} and \code{g2} are usually computed by \code{MLE.GFGM.spline}.
 The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-The admissible range of \code{theta} is given in \code{Dependence.GFGM}
+The admissible range of \code{theta} is given in \code{Dependence.GFGM}.
 }
 \examples{
 library(GFGM.copula)
 Sdist.GFGM.spline(seq(1,5,1),rep(0.1,5),rep(0.1,5),1,5,3,2,0.75)
 }
 \references{
-Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
 
-Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
 }
 \seealso{
 \code{\link{MLE.GFGM.spline}}, \code{\link{Dependence.GFGM}}

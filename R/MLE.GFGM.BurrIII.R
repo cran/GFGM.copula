@@ -16,10 +16,8 @@
 #' @param r.2 Positive tunning parameter in the NR algorithm with default value 1.
 #' @param r.3 Positive tunning parameter in the NR algorithm with default value 1.
 #' @description Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the Burr III margins.
-#' @details The original paper is submitted for review.
-#'
-#' The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
-#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}
+#' @details The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
+#' The admissible range of \code{theta} is given in \code{Dependence.GFGM}.
 #'
 #' @return \item{n}{Sample size.}
 #' \item{count}{Iteration number.}
@@ -31,8 +29,8 @@
 #' \item{MeanY}{Mean lifetime due to failure cause 2.}
 #' \item{logL}{Log-likelihood value under the fitted model.}
 #'
-#' @references Shih and Emura (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
-#' @references Shih and Emura (2018) Likelihood inference for bivariate latent failure time models with competing risks udner the generalized FGM copula (in re-submission, Computational Statistics).
+#' @references Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
 #' @seealso \code{\link{Dependence.GFGM}}
 #' @importFrom stats qnorm runif
 #' @importFrom utils globalVariables
