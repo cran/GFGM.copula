@@ -12,8 +12,8 @@
 #' @return \item{X}{\code{X} is asscoiated with the parameter \code{Alpha}.}
 #' \item{Y}{\code{Y} is asscoiated with the parameter \code{Beta}.}
 #'
-#' @references Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
-#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
+#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
+#' @references Shih J-H, Emura T (2019) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, 60:1101-1118.
 #' @seealso \code{\link{Dependence.GFGM}}
 #' @importFrom stats runif integrate uniroot
 #' @export

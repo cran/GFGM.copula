@@ -40,9 +40,9 @@ library(GFGM.copula)
 Sdist.GFGM.BurrIII(c(1:5),1,1,1,3,2,0.75,eta = 1)
 }
 \references{
-Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
 
-Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
+Shih J-H, Emura T (2019) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, 60:1101-1118.
 }
 \seealso{
 \code{\link{MLE.GFGM.BurrIII}}, \code{\link{Dependence.GFGM}}

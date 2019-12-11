@@ -20,7 +20,7 @@
 #' @return \item{S.overall}{Cramer-von Mises type statistic based on parametric and non-parametric estimators of sub-distribution functions for testing overall model.}
 #' \item{S.GFGM}{Cramer-von Mises type statistic based on semi-parametric and non-parametric estimators of sub-distribution functions for testing the generalized FGM copula.}
 #'
-#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
+#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
 #' @seealso \code{\link{Dependence.GFGM}}, \code{\link{MLE.GFGM.BurrIII}}, \code{\link{MLE.GFGM.spline}}
 #' @importFrom cmprsk cuminc timepoints
 #' @importFrom utils globalVariables

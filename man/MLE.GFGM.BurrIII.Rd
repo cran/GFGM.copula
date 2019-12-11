@@ -4,9 +4,23 @@
 \alias{MLE.GFGM.BurrIII}
 \title{Maximum likelihood estimation for bivariate dependent competing risks data under the generalized FGM copula with the Burr III margins}
 \usage{
-MLE.GFGM.BurrIII(t.event, event1, event2, D, p, q, theta, eta = 0,
-  Gamma.0 = 1, epsilon.0 = 1e-05, epsilon.1 = 1e-10, epsilon.2 = 1e-300,
-  r.1 = 1, r.2 = 1, r.3 = 1)
+MLE.GFGM.BurrIII(
+  t.event,
+  event1,
+  event2,
+  D,
+  p,
+  q,
+  theta,
+  eta = 0,
+  Gamma.0 = 1,
+  epsilon.0 = 1e-05,
+  epsilon.1 = 1e-10,
+  epsilon.2 = 1e-300,
+  r.1 = 1,
+  r.2 = 1,
+  r.3 = 1
+)
 }
 \arguments{
 \item{t.event}{Vector of the observed failure times.}
@@ -85,9 +99,9 @@ library(GFGM.copula)
 MLE.GFGM.BurrIII(t.event,event1,event2,5000,3,2,0.75,eta = -71)
 }
 \references{
-Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
 
-Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
+Shih J-H, Emura T (2019) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, 60:1101-1118.
 }
 \seealso{
 \code{\link{Dependence.GFGM}}

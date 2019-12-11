@@ -35,7 +35,7 @@ Maximum likelihood estimation for bivariate dependent competing risks data under
 The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
 The admissible range of \code{theta} is given in \code{Dependence.GFGM}.
 
-To adapt our functions to dependent censoring models in Emura and Chen (2018), one can simply set \code{event2} = \code{1-event1} (See examples).
+To adapt our functions to dependent censoring models in Emura and Chen (2018), one can simply set \code{event2} = \code{1-event1}.
 }
 \examples{
 con   = c(16,224,16,80,128,168,144,176,176,568,392,576,128,56,112,160,384,600,40,416,
@@ -63,23 +63,13 @@ event2  = c(rep(0,length(con)),rep(1,length(uncon)),rep(0,length(cen)))
 
 library(GFGM.copula)
 MLE.GFGM.spline(t.event,event1,event2,3,2,0.75)
-
-### dependent censoring ###
-
-library(compound.Cox)
-library(GFGM.copula)
-data(Lung)
-t.vec = Lung$t.vec
-d.vec = Lung$d.vec
-
-MLE.GFGM.spline(t.vec,d.vec,1-d.vec,3,2,-0.6)
 }
 \references{
-Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+Emura T, Chen Y-H (2018) Analysis of Survival Data with Dependent Censoring, Copula-Based Approaches, JSS Research Series in Statistics, Springer, Singapore.
 
-Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
+Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
 
-Emura T, Chen Y-H (2018) Analysis of Survival Data with Dependent Censoring, Copula-Based Approaches, JSS Research Series in Statistics, Springer, in press.
+Shih J-H, Emura T (2019) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, 60:1101-1118.
 }
 \seealso{
 \code{\link{Dependence.GFGM}}

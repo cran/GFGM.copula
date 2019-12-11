@@ -6,12 +6,12 @@
 #' @description Compute Kendall's tau and Spearman's rho with their boundaries under the generalized FGM copula.
 #' @details The admissible range of \code{theta} (\eqn{\theta}) is
 #' \deqn{-\min\bigg\{1,\frac{1}{p^{2q}}\bigg(\frac{1+pq}{q-1}\bigg)^{2q-2}\bigg\} \leq \theta \leq \frac{1}{p^{q}}\bigg(\frac{1+pq}{q-1}\bigg)^{q-1}.}
-#' See also Shih and Emura (2016) for details.
+#' See also Shih and Emura (2019) for details.
 #' @return \item{theta}{Dependence parameter.}
 #' \item{tau}{Kendall's tau.}
 #' \item{rho}{Spearman's rho.}
 #'
-#' @references Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
+#' @references Shih J-H, Emura T (2019) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, 60:1101-1118.
 #' @export
 #'
 #' @examples

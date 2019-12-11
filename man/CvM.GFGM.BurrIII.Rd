@@ -4,8 +4,21 @@
 \alias{CvM.GFGM.BurrIII}
 \title{The Cramer-von Mises type statistics under the generalized FGM copula}
 \usage{
-CvM.GFGM.BurrIII(t.event, event1, event2, Alpha, Beta, Gamma, g1, g2, p, q,
-  theta, eta = 0, Sdist.plot = TRUE)
+CvM.GFGM.BurrIII(
+  t.event,
+  event1,
+  event2,
+  Alpha,
+  Beta,
+  Gamma,
+  g1,
+  g2,
+  p,
+  q,
+  theta,
+  eta = 0,
+  Sdist.plot = TRUE
+)
 }
 \arguments{
 \item{t.event}{Vector of the observed failure times.}
@@ -80,7 +93,7 @@ library(GFGM.copula)
 #CvM.GFGM.BurrIII(t.event,event1,event2,Alpha,Beta,Gamma,g1,g2,3,2,0.75,eta = -71)
 }
 \references{
-Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
+Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
 }
 \seealso{
 \code{\link{Dependence.GFGM}}, \code{\link{MLE.GFGM.BurrIII}}, \code{\link{MLE.GFGM.spline}}

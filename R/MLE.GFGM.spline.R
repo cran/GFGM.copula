@@ -11,7 +11,7 @@
 #' @details The copula parameter \code{q} is restricted to be a integer due to the binominal theorem.
 #' The admissible range of \code{theta} is given in \code{Dependence.GFGM}.
 #'
-#' To adapt our functions to dependent censoring models in Emura and Chen (2018), one can simply set \code{event2} = \code{1-event1} (See examples).
+#' To adapt our functions to dependent censoring models in Emura and Chen (2018), one can simply set \code{event2} = \code{1-event1}.
 #'
 #' @return \item{n}{Sample size.}
 #' \item{g1}{Maximum likelihood estimator of the splines coefficients for the failure cause 1.}
@@ -19,9 +19,9 @@
 #' \item{g1.var}{Covariance matrix of splines coefficients estimates for the failure cause 1.}
 #' \item{g2.var}{Covariance matrix of splines coefficients estimates for the failure cause 2.}
 #'
-#' @references Shih J-H, Emura T (2016) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, doi: 10.1007/s00362-016-0865-5.
-#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, doi: 10.1007/s00180-018-0804-0.
-#' @references Emura T, Chen Y-H (2018) Analysis of Survival Data with Dependent Censoring, Copula-Based Approaches, JSS Research Series in Statistics, Springer, in press.
+#' @references Emura T, Chen Y-H (2018) Analysis of Survival Data with Dependent Censoring, Copula-Based Approaches, JSS Research Series in Statistics, Springer, Singapore.
+#' @references Shih J-H, Emura T (2018) Likelihood-based inference for bivariate latent failure time models with competing risks udner the generalized FGM copula, Computational Statistics, 33:1293-1323.
+#' @references Shih J-H, Emura T (2019) Bivariate dependence measures and bivariate competing risks models under the generalized FGM copula, Statistical Papers, 60:1101-1118.
 #' @seealso \code{\link{Dependence.GFGM}}
 #' @importFrom joint.Cox M.spline I.spline
 #' @import compound.Cox
@@ -53,16 +53,7 @@
 #'
 #' library(GFGM.copula)
 #' MLE.GFGM.spline(t.event,event1,event2,3,2,0.75)
-#'
-#' ### dependent censoring ###
-#'
-#' library(compound.Cox)
-#' library(GFGM.copula)
-#' data(Lung)
-#' t.vec = Lung$t.vec
-#' d.vec = Lung$d.vec
-#'
-#' MLE.GFGM.spline(t.vec,d.vec,1-d.vec,3,2,-0.6)
+
 
 MLE.GFGM.spline = function(t.event,event1,event2,p,q,theta,h.plot = TRUE) {
 
